@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS Ad Blocker - Technical Documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+  <style>
+    :root {
+      --bg:        #0a0f1a;
+      --surface:   #0f1624;
+      --border:    #1f3050;
+      --primary:   #5b9bd5;
+      --secondary: #4caf8a;
+      --accent:    #c084fc;
+      --warn:      #e07b3a;
+      --text:      #dce6f0;
+      --muted:     #5a7a9a;
+      --glow-p:    rgba(91,155,213,0.20);
+      --glow-s:    rgba(76,175,138,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      padding: 2.5rem;
+      line-height: 1.75;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(91,155,213,0.012) 2px, rgba(91,155,213,0.012) 4px
+      );
+      pointer-events: none; z-index: 0;
+    }
+
+    header, section, footer, p, pre, div { position: relative; z-index: 1; }
+
+    header {
+      border-left: 4px solid var(--primary);
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      color: var(--primary);
+      text-shadow: 0 0 16px var(--glow-p);
+      letter-spacing: .04em;
+    }
+    h1 span { color: var(--secondary); text-shadow: 0 0 12px var(--glow-s); }
+    .subtitle { color: var(--muted); font-size: .9rem; margin-top: .5rem; max-width: 700px; }
+
+    .badges { display: flex; gap: .5rem; margin: .75rem 0; flex-wrap: wrap; }
+    .badge { font-size: .7rem; padding: .2rem .7rem; border-radius: 999px; letter-spacing: .06em; }
+    .badge.blue    { border: 1px solid var(--primary);   color: var(--primary); }
+    .badge.green   { border: 1px solid var(--secondary); color: var(--secondary); }
+    .badge.purple  { border: 1px solid var(--accent);    color: var(--accent); }
+    .badge.orange  { border: 1px solid var(--warn);      color: var(--warn); }
+
+    .section {
+      border-left: 4px solid var(--primary);
+      margin: 3rem 0; padding: 2rem;
+      background-color: var(--surface);
+      box-shadow: 0 0 24px var(--glow-p), inset 0 0 60px rgba(91,155,213,0.02);
+      border-radius: 10px;
+    }
+    .section.green-accent {
+      border-left-color: var(--secondary);
+      box-shadow: 0 0 24px var(--glow-s), inset 0 0 60px rgba(76,175,138,0.02);
+    }
+    .section.purple-accent {
+      border-left-color: var(--accent);
+      box-shadow: 0 0 24px rgba(192,132,252,0.15), inset 0 0 60px rgba(192,132,252,0.02);
+    }
+
+    h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: 1rem; letter-spacing: .05em; }
+    .section.green-accent  h2 { color: var(--secondary); }
+    .section.purple-accent h2 { color: var(--accent); }
+
+    h3 { font-size: .95rem; color: var(--secondary); margin: 1.5rem 0 .5rem; letter-spacing: .04em; }
+    .section.purple-accent h3 { color: var(--accent); }
+    .section.green-accent  h3 { color: var(--primary); }
+
+    p { color: #8aa8c4; margin-bottom: .75rem; }
+    strong { color: var(--text); }
+    ul, ol { color: #8aa8c4; padding-left: 1.5rem; margin-bottom: .75rem; }
+    li { margin-bottom: .4rem; }
+
+    pre {
+      background: rgba(0,0,0,0.45);
+      padding: 1.1rem 1.25rem;
+      overflow-x: auto;
+      color: var(--secondary);
+      border-left: 4px solid var(--secondary);
+      border-radius: 4px;
+      margin: 1rem 0 1.25rem;
+      font-size: .84rem;
+      line-height: 1.7;
+    }
+    code {
+      background: rgba(91,155,213,0.1);
+      color: var(--accent);
+      padding: .1rem .4rem;
+      border-radius: 3px;
+      font-size: .85em;
+    }
+    .comment { color: #3a5570; }
+
+    .flow { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; margin: .75rem 0 1.25rem; }
+    .flow-step {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      padding: .35rem .85rem;
+      font-size: .8rem; color: var(--primary);
+      white-space: nowrap;
+    }
+    .flow-step.green   { border-color: var(--secondary); color: var(--secondary); }
+    .flow-step.purple  { border-color: var(--accent);    color: var(--accent); }
+    .flow-step.blocked { border-color: var(--warn);      color: var(--warn); }
+    .flow-arrow { color: var(--muted); font-size: 1rem; }
+
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.25rem; font-size: .88rem; }
+    thead tr { background: rgba(91,155,213,0.07); }
+    th {
+      color: var(--primary); padding: .6rem 1rem; text-align: left;
+      border-bottom: 2px solid var(--primary); letter-spacing: .06em; font-size: .78rem;
+    }
+    .section.green-accent  th { color: var(--secondary); border-bottom-color: var(--secondary); }
+    .section.purple-accent th { color: var(--accent);    border-bottom-color: var(--accent); }
+    td { padding: .55rem 1rem; border-bottom: 1px solid var(--border); color: #8aa8c4; }
+    tr:hover td { background: rgba(91,155,213,0.04); }
+
+    .note {
+      background: rgba(76,175,138,0.06);
+      border-left: 3px solid var(--secondary);
+      padding: .75rem 1rem; border-radius: 0 6px 6px 0;
+      color: #6ec4a0; font-size: .88rem; margin: 1rem 0;
+    }
+    .tip {
+      background: rgba(192,132,252,0.06);
+      border-left: 3px solid var(--accent);
+      padding: .75rem 1rem; border-radius: 0 6px 6px 0;
+      color: var(--accent); font-size: .88rem; margin: 1rem 0;
+    }
+    .warn-box {
+      background: rgba(224,123,58,0.06);
+      border-left: 3px solid var(--warn);
+      padding: .75rem 1rem; border-radius: 0 6px 6px 0;
+      color: var(--warn); font-size: .88rem; margin: 1rem 0;
+    }
+
+    .part-banner {
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      margin: 3rem 0 0;
+      font-size: .8rem;
+      letter-spacing: .12em;
+      color: var(--muted);
+      background: rgba(91,155,213,0.04);
+    }
+    .part-banner span       { color: var(--primary); }
+    .part-banner span.green { color: var(--secondary); }
+
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      margin: 2rem 0;
+    }
+    .toc-title { color: var(--primary); font-size: .85rem; letter-spacing: .1em; margin-bottom: 1rem; }
+    .toc a {
+      display: block; color: var(--muted); text-decoration: none;
+      font-size: .82rem; padding: .2rem 0; transition: color .15s;
+    }
+    .toc a:hover { color: var(--secondary); }
+    .toc a .toc-num { color: var(--primary); margin-right: .5rem; }
+    .toc-group-label { color: var(--accent); font-size: .7rem; letter-spacing: .1em; margin: .75rem 0 .25rem; }
+
+    footer {
+      margin-top: 5rem; font-size: .85rem;
+      color: var(--muted); text-align: center;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════
+       HEADER
+  ══════════════════════════ -->
+  <header>
+    <h1>DNS Ad Blocker — <span>Technical Documentation</span></h1>
+    <div class="badges">
+      <span class="badge blue">v1.0</span>
+      <span class="badge green">OpenDNS</span>
+      <span class="badge purple">Pi-hole on Zorin OS</span>
+      <span class="badge orange">Del Risco Technologies</span>
+    </div>
+    <p class="subtitle">
+      Every device on your network — phones, laptops, smart TVs — makes hundreds of DNS
+      requests every day. Many of those requests are for ads, trackers, and content you
+      never asked for. This project intercepts those requests at the network level and
+      blocks them before they ever reach your devices, using <strong>OpenDNS</strong> for
+      category filtering and <strong>Pi-hole</strong> for ad blocking.
+      No browser extensions. No per-device setup. One solution that covers everything,
+      running on a repurposed <strong>2010 iMac</strong> as a dedicated server.
+    </p>
+  </header>
+
+  <!-- ══════════════════════════
+       TABLE OF CONTENTS
+  ══════════════════════════ -->
+  <div class="toc">
+    <div class="toc-title">TABLE OF CONTENTS</div>
+    <div class="toc-group-label">PART 1 — OpenDNS</div>
+    <a href="#s1"><span class="toc-num">01</span> What is DNS?</a>
+    <a href="#s2"><span class="toc-num">02</span> What is OpenDNS?</a>
+    <a href="#s3"><span class="toc-num">03</span> Creating an OpenDNS Account</a>
+    <a href="#s4"><span class="toc-num">04</span> Configuring the Router</a>
+    <a href="#s5"><span class="toc-num">05</span> Customizing the Filtering</a>
+    <a href="#s6"><span class="toc-num">06</span> Verification</a>
+    <div class="toc-group-label">PART 2 — Pi-hole on Zorin OS</div>
+    <a href="#s7"><span class="toc-num">07</span> Full Architecture Overview</a>
+    <a href="#s8"><span class="toc-num">08</span> Initial Setup on Zorin OS</a>
+    <a href="#s9"><span class="toc-num">09</span> Connecting from Windows via SSH</a>
+    <a href="#s10"><span class="toc-num">10</span> Setting a Static IP Reservation</a>
+    <a href="#s11"><span class="toc-num">11</span> Installing Pi-hole</a>
+    <a href="#s12"><span class="toc-num">12</span> Adding Community Blocklists</a>
+    <a href="#s13"><span class="toc-num">13</span> Pointing the Router to Pi-hole</a>
+    <a href="#s14"><span class="toc-num">14</span> Verification</a>
+    <a href="#s15"><span class="toc-num">15</span> Final Thoughts</a>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       PART 1 — OPENDNS
+  ══════════════════════════════════════ -->
+  <div class="part-banner">— <span>PART 1</span> — OpenDNS —</div>
+
+
+  <!-- S1 -->
+  <section class="section" id="s1">
+    <h2>01. What is DNS?</h2>
+    <p>
+      Think of the internet as a massive city. Every website has a real address — an
+      <strong>IP address</strong> — but nobody memorizes those. Instead, we use names like
+      <code>youtube.com</code>. DNS is the system that translates those names into the actual
+      addresses your device needs to make a connection. It works exactly like a phone book,
+      except it is for the entire internet.
+    </p>
+    <p>
+      Here is what actually happens when you open your browser and type <code>youtube.com</code>.
+      Your device has no idea where that is, so it asks your router. The router does not know
+      either, so it forwards the question to a DNS server — usually one provided by your ISP.
+      That server looks up the address, returns the real IP, and now your device knows exactly
+      where to go. The whole process takes milliseconds.
+    </p>
+
+    <h3>How a normal DNS query works</h3>
+    <div class="flow">
+      <div class="flow-step">Your device</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Router</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">ISP DNS Server</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">IP for youtube.com returned</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Connected</div>
+    </div>
+
+    <h3>How blocking works at the DNS level</h3>
+    <p>
+      If you control the DNS server, you control what gets resolved and what does not.
+      When a blocked domain is requested, the DNS server returns nothing — the device
+      never gets an address, and the site never loads. The request dies right there,
+      before any content is ever fetched.
+    </p>
+    <div class="flow">
+      <div class="flow-step">Your device</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Router</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step purple">OpenDNS / Pi-hole</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step blocked">Domain blocked — no address returned</div>
+    </div>
+  </section>
+
+
+  <!-- S2 -->
+  <section class="section green-accent" id="s2">
+    <h2>02. What is OpenDNS?</h2>
+    <p>
+      OpenDNS is a free DNS service owned by Cisco that replaces your ISP's DNS server
+      with one you actually control. Once your router is pointed at OpenDNS, every device
+      on the network uses it automatically — no configuration needed on each device.
+      From the OpenDNS dashboard you can block entire categories of websites, specific
+      domains, and enable protection against malware and phishing, all in one place.
+    </p>
+    <p>
+      The reason to use OpenDNS instead of your ISP's DNS comes down to control and speed.
+      Your ISP's DNS gives you zero visibility and zero customization. OpenDNS gives you a
+      full dashboard, filtering rules, and logs showing exactly what your network is trying
+      to reach. It is also significantly faster than most ISP DNS servers, which means every
+      lookup is quicker and browsing feels snappier across every device.
+    </p>
+  </section>
+
+
+  <!-- S3 -->
+  <section class="section purple-accent" id="s3">
+    <h2>03. Creating an OpenDNS Account</h2>
+    <ol>
+      <li>Go to <code>opendns.com</code> and select the <strong>Consumer</strong> section.</li>
+      <li>From the free plan options, choose the one on the <strong>right</strong> — the customizable version.</li>
+      <li>Click <strong>Sign Up</strong> and fill in your information to create the account.</li>
+      <li>Once logged in, OpenDNS will display your current public IP at the top of the dashboard. That IP is how OpenDNS identifies your network and applies your custom settings.</li>
+    </ol>
+
+    <div class="note">
+      Keep in mind that home ISPs sometimes change your public IP. If OpenDNS stops
+      working after some time, log back in and update the IP associated with your network.
+    </div>
+  </section>
+
+
+  <!-- S4 -->
+  <section class="section" id="s4">
+    <h2>04. Configuring the Router</h2>
+    <p>
+      The cleanest way to apply OpenDNS across the entire network is through the router.
+      When a device connects and asks for network settings, the router hands out everything
+      it needs — including which DNS server to use. By updating that value on the router,
+      every device on the network automatically starts using OpenDNS without any individual
+      configuration.
+    </p>
+
+    <h3>OpenDNS server addresses</h3>
+    <pre><span class="comment">Primary DNS server</span>
+208.67.222.222
+
+<span class="comment">Secondary DNS server (for redundancy)</span>
+208.67.220.220</pre>
+
+    <h3>What to do on the router</h3>
+    <p>
+      Every router is different, but the goal is the same: find the <strong>DHCP settings</strong>
+      and replace the current DNS server addresses with the OpenDNS ones above. On most routers
+      this is found under a section called Advanced, Network, or LAN Setup. OpenDNS provides
+      step-by-step guides for almost every router model at <code>opendns.com/setupguide</code>.
+    </p>
+
+    <div class="warn-box">
+      After saving the router settings, connected devices will not switch over immediately.
+      They already have an active lease and will keep using the old DNS until it expires,
+      usually within 24 hours. To apply the change right away on a Windows machine, run these
+      two commands in the Command Prompt:
+    </div>
+
+    <pre><span class="comment">Release the current network lease</span>
+ipconfig /release
+
+<span class="comment">Request a new lease with the updated DNS</span>
+ipconfig /renew</pre>
+  </section>
+
+
+  <!-- S5 -->
+  <section class="section green-accent" id="s5">
+    <h2>05. Customizing the Filtering</h2>
+
+    <h3>Adding your network to the dashboard</h3>
+    <ol>
+      <li>In the OpenDNS dashboard, click <strong>Add a Network</strong>.</li>
+      <li>It will auto-detect your public IP. Confirm it and click <strong>Add this network</strong>.</li>
+      <li>Give it a name you will recognize, then click the network to open its settings.</li>
+    </ol>
+
+    <h3>Web content filtering</h3>
+    <p>
+      OpenDNS lets you block entire categories of websites in one click. You can choose a
+      preset protection level or go custom and pick exactly which categories to block.
+      Useful categories include adult content, malware sites, phishing, and social media.
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>Level</th><th>What it blocks</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Low</td><td>Pornography only</td></tr>
+        <tr><td>Moderate</td><td>Pornography, adware, phishing, and tasteless content</td></tr>
+        <tr><td>High</td><td>Everything above plus social media, games, and video streaming</td></tr>
+        <tr><td>Custom</td><td>You choose exactly which categories to block</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Stats and Logs</h3>
+    <p>
+      By default, OpenDNS does not keep any records of your network's activity. Enabling
+      <strong>Stats and Logs</strong> in the network settings turns on a live view of every
+      DNS query being made, which domains are being blocked, and how much traffic each one
+      generates. It is the best way to understand what your network is actually doing.
+    </p>
+
+    <div class="tip">
+      Give Stats and Logs a few hours to collect data before checking the dashboard.
+      After a day or two, the patterns in your network traffic become very clear.
+    </div>
+  </section>
+
+
+  <!-- S6 -->
+  <section class="section purple-accent" id="s6">
+    <h2>06. Verification</h2>
+    <p>
+      Once the router is configured and your device has renewed its network lease, you can
+      confirm that OpenDNS is active by visiting the official setup guide page. On the right
+      side of <code>opendns.com/setupguide</code> there is a section that reads
+      <em>"Test Your Settings"</em> with a link that checks whether your network is correctly
+      routing DNS through OpenDNS. Click it and you will get an immediate confirmation.
+    </p>
+
+    <h3>Test a blocked site from the browser</h3>
+    <ol>
+      <li>Wait about 3 minutes after saving your filtering settings for them to propagate.</li>
+      <li>Open a <strong>private or incognito window</strong> to avoid cached results.</li>
+      <li>Try to visit a domain you have set to block. Instead of the site loading, you will see the OpenDNS block page.</li>
+    </ol>
+
+    <h3>Test from the terminal</h3>
+    <pre><span class="comment">Query a blocked domain through your DNS server</span>
+nslookup netflix.com
+
+<span class="comment">If OpenDNS is blocking it, the returned address will be the OpenDNS block page IP</span>
+Name:    netflix.com
+Address: 67.215.65.132</pre>
+
+    <div class="note">
+      If the test page confirms your connection and blocked sites show the OpenDNS block
+      page instead of loading, Part 1 is fully working.
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       PART 2 — PI-HOLE ON ZORIN OS
+  ══════════════════════════════════════ -->
+  <div class="part-banner">— <span class="green">PART 2</span> — PI-HOLE ON ZORIN OS —</div>
+
+
+  <!-- S7 -->
+  <section class="section" id="s7">
+    <h2>07. Full Architecture Overview</h2>
+    <p>
+      Part 2 adds Pi-hole — a network-wide DNS ad blocker installed directly on a dedicated
+      machine. The server is a <strong>2010 iMac</strong> running <strong>Zorin OS</strong>,
+      managed remotely over SSH from a Windows PC. Pi-hole intercepts every DNS query on
+      the network and blocks ad and tracker domains before they are ever fetched. Anything
+      that passes through gets forwarded to OpenDNS, which applies the category filtering
+      from Part 1.
+    </p>
+
+    <h3>Full query flow with both layers active</h3>
+    <div class="flow">
+      <div class="flow-step">Device</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step purple">Pi-hole (2010 iMac — Zorin OS)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step blocked">Ad or tracker domain — BLOCKED</div>
+    </div>
+    <div class="flow">
+      <div class="flow-step">Device</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step purple">Pi-hole (2010 iMac — Zorin OS)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Not in blocklist</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">OpenDNS upstream</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Real IP returned</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Role</th><th>Details</th><th>IP Address</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pi-hole Server</td>
+          <td>DNS ad blocker</td>
+          <td>2010 iMac running Zorin OS</td>
+          <td><span style="color:var(--warn)">Static reservation on router — TBD</span></td>
+        </tr>
+        <tr>
+          <td>Management Client</td>
+          <td>Remote SSH access and verification</td>
+          <td>Windows PC — same local network</td>
+          <td><span style="color:var(--warn)">TBD</span></td>
+        </tr>
+        <tr>
+          <td>OpenDNS</td>
+          <td>Upstream DNS with category filtering</td>
+          <td>208.67.222.222 / 208.67.220.220</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- S8 -->
+  <section class="section green-accent" id="s8">
+    <h2>08. Initial Setup on Zorin OS</h2>
+    <p>
+      Zorin OS is already installed on the 2010 iMac with its desktop environment. The first
+      step is making sure the system is fully up to date and that SSH is enabled so the machine
+      can be managed remotely from the Windows PC going forward.
+    </p>
+
+    <h3>Update and upgrade all packages</h3>
+    <pre><span class="comment">Update the package list and upgrade installed packages</span>
+sudo apt update && sudo apt upgrade -y</pre>
+
+    <h3>Enable and start the SSH service</h3>
+    <pre><span class="comment">Install the OpenSSH server if not already present</span>
+sudo apt install openssh-server -y
+
+<span class="comment">Enable SSH so it starts automatically on every boot</span>
+sudo systemctl enable ssh
+
+<span class="comment">Start the SSH service right now without rebooting</span>
+sudo systemctl start ssh
+
+<span class="comment">Confirm the service is running</span>
+sudo systemctl status ssh</pre>
+
+    <div class="note">
+      The status output should show <code>active (running)</code>. Once SSH is up, the
+      iMac can be managed entirely from the Windows PC.
+    </div>
+
+    <h3>Find the iMac's local IP address</h3>
+    <pre><span class="comment">Check the network interface and note the IPv4 address</span>
+ip a</pre>
+
+    <p>Write down that IP address. You will need it to connect via SSH and later to set up the static reservation on the router.</p>
+  </section>
+
+
+  <!-- S9 -->
+  <section class="section purple-accent" id="s9">
+    <h2>09. Connecting from Windows via SSH</h2>
+    <p>
+      With SSH running on the iMac, open a terminal on the Windows PC and connect
+      remotely. From this point on, all commands are run through this SSH session.
+    </p>
+
+    <pre><span class="comment">Connect to the iMac from the Windows PC</span>
+ssh yourusername@&lt;iMac-IP&gt;</pre>
+
+    <p>
+      Once connected, switch to root so the remaining commands run with the necessary privileges.
+    </p>
+
+    <pre><span class="comment">Elevate to root inside the SSH session</span>
+sudo su</pre>
+
+    <h3>Install curl</h3>
+    <p>Curl is needed to download and run the Pi-hole installer.</p>
+
+    <pre><span class="comment">Install curl</span>
+sudo apt install curl -y</pre>
+
+    <div class="tip">
+      PuTTY is a popular and free SSH client for Windows. The built-in Windows Terminal
+      also works — just open it and run the ssh command directly.
+    </div>
+  </section>
+
+
+  <!-- S10 -->
+  <section class="section" id="s10">
+    <h2>10. Setting a Static IP Reservation on the Router</h2>
+    <p>
+      Before installing Pi-hole, the iMac needs a fixed IP address. The Pi-hole installer
+      actually pauses mid-installation to warn you about this — it states that the device
+      running Pi-hole must have either a static IP or a DHCP reservation, otherwise the IP
+      could change and break DNS for the whole network.
+    </p>
+    <p>
+      The cleanest way to handle this is through a <strong>DHCP reservation on the router</strong>.
+      Log into the router admin panel, find the connected devices list, locate the iMac,
+      and assign it a permanent IP tied to its MAC address. Every router does this slightly
+      differently, but the setting is usually found under DHCP, LAN, or Connected Devices.
+    </p>
+
+    <div class="warn-box">
+      Set the reservation before finishing the installation. The address the installer
+      detects during setup is the one used for the web panel URL, the router DNS settings,
+      and every device pointing to Pi-hole.
+    </div>
+  </section>
+
+
+  <!-- S11 -->
+  <section class="section green-accent" id="s11">
+    <h2>11. Installing Pi-hole</h2>
+    <p>
+      Pi-hole is installed using the official one-line command from
+      <code>docs.pi-hole.net/main/basic-install</code>. It handles dependencies, DNS
+      configuration, the web interface, and the default ad blocklist automatically.
+    </p>
+
+    <pre><span class="comment">Run the official Pi-hole installer</span>
+curl -sSL https://install.pi-hole.net | bash</pre>
+
+    <p>The installer walks through a short setup process. These are the selections made during installation:</p>
+
+    <table>
+      <thead>
+        <tr><th>Installer Prompt</th><th>Selection</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Upstream DNS provider</td><td>OpenDNS</td></tr>
+        <tr><td>Include default blocklist</td><td>Yes</td></tr>
+        <tr><td>Install admin web interface</td><td>Yes</td></tr>
+        <tr><td>Enable query logging</td><td>No</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Set a custom admin password</h3>
+    <p>
+      When the installer finishes it shows a generated password. Set your own right away:
+    </p>
+
+    <pre><span class="comment">Set a new password for the Pi-hole web panel</span>
+sudo pihole setpassword</pre>
+
+    <div class="note">
+      The web panel is now accessible at <code>http://&lt;iMac-IP&gt;/admin</code>.
+      Log in with the password you just set to confirm everything installed correctly.
+    </div>
+  </section>
+
+
+  <!-- S12 -->
+  <section class="section purple-accent" id="s12">
+    <h2>12. Adding Community Blocklists</h2>
+    <p>
+      The default Pi-hole blocklist is a solid starting point, but adding community-maintained
+      lists significantly expands coverage. Two additional lists were added to this setup, both
+      known for being comprehensive and well-maintained.
+    </p>
+
+    <h3>How to add a blocklist</h3>
+    <ol>
+      <li>Open the Pi-hole web panel and go to <strong>Adlists</strong> under the Group Management section.</li>
+      <li>Paste the URL of the blocklist into the address field and click <strong>Add</strong>.</li>
+      <li>After adding both lists, go to <strong>Tools</strong> and click <strong>Update Gravity</strong> to pull in the new entries.</li>
+    </ol>
+
+    <h3>Blocklists added</h3>
+    <table>
+      <thead>
+        <tr><th>List</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pi-hole Optimized Blocklists</td>
+          <td><code>https://media.githubusercontent.com/media/zachlagden/Pi-hole-Optimized-Blocklists/main/lists/all_domains.txt</code></td>
+        </tr>
+        <tr>
+          <td>Hagezi DNS Blocklist — Ultimate</td>
+          <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/ultimate.txt</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip">
+      After running Update Gravity, the Pi-hole dashboard will show the new total number
+      of blocked domains across all lists combined.
+    </div>
+  </section>
+
+
+  <!-- S13 -->
+  <section class="section" id="s13">
+    <h2>13. Pointing the Router to Pi-hole</h2>
+    <p>
+      Pi-hole is running and working, but at this point only devices that manually point to
+      it will benefit. To make it cover the entire network, the router needs to hand out the
+      Pi-hole IP as the primary DNS server to every device automatically.
+    </p>
+    <p>
+      Log into the router admin panel and find the DNS settings under DHCP or WAN
+      configuration. Set the <strong>primary DNS</strong> to the iMac's static IP address.
+      For the backup, use OpenDNS so that if Pi-hole ever goes offline, DNS still resolves
+      rather than failing entirely.
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>DNS Slot</th><th>Address</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Primary DNS</td><td>iMac static IP (Pi-hole)</td><td>All queries go through Pi-hole first</td></tr>
+        <tr><td>Secondary DNS</td><td>208.67.222.222</td><td>OpenDNS fallback if Pi-hole is unreachable</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      Once the router is saved, every device on the network that renews its DHCP lease
+      will automatically start using Pi-hole. No configuration needed on any individual device.
+    </div>
+  </section>
+
+
+  <!-- S14 -->
+  <section class="section green-accent" id="s14">
+    <h2>14. Verification</h2>
+    <p>
+      With Pi-hole running and the router updated, ads should be disappearing across
+      every device on the network.
+    </p>
+
+    <h3>Visual test in the browser</h3>
+    <p>
+      Open any news site or content-heavy page that normally shows a lot of ads and do
+      a hard refresh. A noticeable portion of the ad slots will be blank or missing.
+      The page will also load faster since those requests are blocked before they are even sent.
+    </p>
+
+    <h3>Check the Pi-hole dashboard</h3>
+    <p>
+      Open <code>http://&lt;iMac-IP&gt;/admin</code> and log in. The dashboard shows the
+      total number of DNS queries processed and the percentage that was blocked. The
+      Query Log shows every individual request in real time — blocked ones are clearly
+      marked. Once the router change takes effect you will see queries arriving from
+      multiple devices on the network, not just the one you tested on.
+    </p>
+
+    <div class="note">
+      On a typical home network, Pi-hole blocks roughly 25 to 30 percent of all DNS
+      queries. Those are ads and trackers that never reach any device, never consume
+      bandwidth, and never slow down a page load.
+    </div>
+  </section>
+
+
+  <!-- S15 -->
+  <section class="section purple-accent" id="s15">
+    <h2>15. Final Thoughts</h2>
+    <p>
+      I want to be honest about why this iMac ended up as the server for this project.
+      It was sitting there, barely used, and it felt wrong to just let it collect dust.
+      I know a 2010 iMac is not the most power-efficient machine for a task like this —
+      a Raspberry Pi would draw a fraction of the electricity — but for me the decision
+      was never really about efficiency. It was about putting something I already owned
+      to work for something that actually matters to my family.
+    </p>
+    <p>
+      That something is privacy. I think about privacy and security the same way I think
+      about a fence around a home. It is not there because you have something to hide.
+      It is there because you care about what is inside. You want to protect your space,
+      your people, and the things that are yours. There is nothing wrong with that — in
+      fact, I think it is one of the most responsible things you can do. Every ad network
+      and tracker that gets blocked is one less thing quietly watching what your family
+      does online.
+    </p>
+    <p>
+      This project combines OpenDNS for category-based filtering at the router level and
+      Pi-hole for ad and tracker blocking at the DNS layer, with two additional community
+      blocklists to extend that coverage further. The result is a cleaner, faster, and
+      more private experience for every device on the network — without installing
+      anything on any of them.
+    </p>
+    <p>
+      Technologies covered in this project: DNS, DHCP, Linux (Zorin OS), SSH, Pi-hole,
+      OpenDNS, static IP reservation, and router-level DNS configuration.
+    </p>
+  </section>
+
+  <p style="color: var(--muted); margin-top: 3rem;">Thank you for reading.</p>
+
+  <footer>
+    <p>&copy; 2026 Del Risco Technologies&#8482;</p>
+  </footer>
+
+</body>
+</html>

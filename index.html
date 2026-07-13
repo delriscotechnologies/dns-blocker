@@ -703,13 +703,14 @@ sudo pihole setpassword</pre>
     <p>
       Pi-hole is running and working, but at this point only devices that manually point to
       it will benefit. To make it cover the entire network, the router needs to hand out the
-      Pi-hole IP as the primary DNS server to every device automatically.
+      Pi-hole IP as the DNS server for every device automatically.
     </p>
     <p>
       Log into the router admin panel and find the DNS settings under DHCP or WAN
       configuration. Set the <strong>primary DNS</strong> to the iMac's static IP address.
-      For the backup, use OpenDNS so that if Pi-hole ever goes offline, DNS still resolves
-      rather than failing entirely.
+      Leave the secondary slot blank unless you run a second Pi-hole. Configure OpenDNS as
+      an upstream resolver inside Pi-hole instead of advertising it directly to clients;
+      otherwise, some devices may bypass Pi-hole filtering.
     </p>
 
     <table>
@@ -717,8 +718,8 @@ sudo pihole setpassword</pre>
         <tr><th>DNS Slot</th><th>Address</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr><td>Primary DNS</td><td>iMac static IP (Pi-hole)</td><td>All queries go through Pi-hole first</td></tr>
-        <tr><td>Secondary DNS</td><td>208.67.222.222</td><td>OpenDNS fallback if Pi-hole is unreachable</td></tr>
+        <tr><td>Primary DNS</td><td>iMac static IP (Pi-hole)</td><td>All client queries go through Pi-hole</td></tr>
+        <tr><td>Secondary DNS</td><td>Blank, or a second Pi-hole</td><td>Avoids bypassing network-wide filtering</td></tr>
       </tbody>
     </table>
 
@@ -781,7 +782,6 @@ sudo pihole setpassword</pre>
       and tracker that gets blocked is one less thing quietly watching what your family
       does online.
     </p>
-    <p>
   </section>
 
   <footer>

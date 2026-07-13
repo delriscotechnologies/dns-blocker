@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
   <title>DNS Ad Blocker - Technical Documentation</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
   <style>
@@ -112,6 +114,7 @@
       font-size: .85em;
     }
     .comment { color: #3a5570; }
+    .warn-text { color: var(--warn); }
 
     .flow { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; margin: .75rem 0 1.25rem; }
     .flow-step {
@@ -503,13 +506,13 @@ Address: 67.215.65.132</pre>
           <td>Pi-hole Server</td>
           <td>DNS ad blocker</td>
           <td>2010 iMac running Zorin OS</td>
-          <td><span style="color:var(--warn)">Static reservation on router — TBD</span></td>
+          <td><span class="warn-text">Static reservation on router — TBD</span></td>
         </tr>
         <tr>
           <td>Management Client</td>
           <td>Remote SSH access and verification</td>
           <td>Windows PC — same local network</td>
-          <td><span style="color:var(--warn)">DHCP</span></td>
+          <td><span class="warn-text">DHCP</span></td>
         </tr>
         <tr>
           <td>OpenDNS</td>
@@ -533,7 +536,7 @@ Address: 67.215.65.132</pre>
 
     <h3>Update and upgrade all packages</h3>
     <pre><span class="comment">Update the package list and upgrade installed packages</span>
-sudo apt update && sudo apt upgrade -y</pre>
+sudo apt update &amp;&amp; sudo apt upgrade -y</pre>
 
     <h3>Enable and start the SSH service</h3>
     <pre><span class="comment">Install the OpenSSH server if not already present</span>
@@ -620,13 +623,21 @@ sudo apt install curl -y</pre>
   <section class="section green-accent" id="s11">
     <h2>11. Installing Pi-hole</h2>
     <p>
-      Pi-hole is installed using the official one-line command from
-      <code>docs.pi-hole.net/main/basic-install</code>. It handles dependencies, DNS
-      configuration, the web interface, and the default ad blocklist automatically.
+      Pi-hole is installed with its official installer from
+      <code>docs.pi-hole.net/main/basic-install</code>. Download it first so its contents
+      can be reviewed before it is executed with administrator privileges.
     </p>
 
-    <pre><span class="comment">Run the official Pi-hole installer</span>
-curl -sSL https://install.pi-hole.net | bash</pre>
+    <pre><span class="comment">Download, review, and run the official Pi-hole installer</span>
+curl --proto '=https' --tlsv1.2 -fsSLo basic-install.sh https://install.pi-hole.net
+less basic-install.sh
+sudo bash basic-install.sh
+rm -f basic-install.sh</pre>
+
+    <div class="warn-box">
+      Never pipe a remote script directly into a shell. Review the downloaded file before
+      running it, and obtain it only from Pi-hole's official HTTPS endpoint.
+    </div>
 
     <p>The installer walks through a short setup process. These are the selections made during installation:</p>
 
@@ -685,14 +696,14 @@ sudo pihole setpassword</pre>
         </tr>
         <tr>
           <td>Hagezi DNS Blocklist — Ultimate</td>
-          <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/ultimate.txt</code></td>
+          <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@b14c7a539db4d6215021829fb2f626d728887db3/adblock/ultimate.txt</code></td>
         </tr>
       </tbody>
     </table>
 
     <div class="tip">
-      After running Update Gravity, the Pi-hole dashboard will show the new total number
-      of blocked domains across all lists combined.
+      The Hagezi URL is pinned to a known release for reproducibility. Review the project's
+      release notes and update the version intentionally before running Update Gravity.
     </div>
   </section>
 

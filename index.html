@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
   <title>DNS Ad Blocker - Technical Documentation</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
   <style>
@@ -24,6 +24,34 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+
+    .reading-progress {
+      position: fixed;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 0;
+      border-radius: 0;
+      background: rgba(76, 175, 138, 0.24);
+      color: #4caf8a;
+      box-shadow: 0 0 12px rgba(76, 175, 138, 0.45);
+      pointer-events: none;
+    }
+    .reading-progress::-webkit-progress-bar {
+      background: rgba(76, 175, 138, 0.24);
+    }
+    .reading-progress::-webkit-progress-value {
+      background: linear-gradient(to right, #4caf8a, #72ffbc);
+      box-shadow: 0 0 18px rgba(76, 175, 138, 0.95);
+    }
+    .reading-progress::-moz-progress-bar {
+      background: linear-gradient(to right, #4caf8a, #72ffbc);
+      box-shadow: 0 0 18px rgba(76, 175, 138, 0.95);
+    }
 
     body {
       background-color: var(--bg);
@@ -199,6 +227,8 @@
   </style>
 </head>
 <body>
+
+  <progress class="reading-progress" data-reading-progress max="100" value="0" aria-label="Reading progress"></progress>
 
   <!-- ══════════════════════════
        HEADER
@@ -798,6 +828,8 @@ sudo pihole setpassword</pre>
   <footer>
     <p>&copy; 2026 Del Risco Technologies</p>
   </footer>
+
+  <script src="reading-progress.js?v=1" defer></script>
 
 </body>
 </html>

@@ -21,6 +21,4 @@ This repository contains static technical documentation only. It does not includ
 ## References
 
 - [Pi-hole installation](https://docs.pi-hole.net/main/basic-install/)
-- [Pi-hole upstream DNS providers](https://docs.pi-hole.net/guides/dns/upstream-dns-providers/)
 - [OpenDNS Home Internet Security](https://www.opendns.com/home-internet-security/)
-- [OpenDNS support](https://www.opendns.com/support/)

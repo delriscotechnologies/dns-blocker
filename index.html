@@ -337,11 +337,11 @@
       domains, and enable protection against malware and phishing, all in one place.
     </p>
     <p>
-      The reason to use OpenDNS instead of your ISP's DNS comes down to control and speed.
-      Your ISP's DNS gives you zero visibility and zero customization. OpenDNS gives you a
-      full dashboard, filtering rules, and logs showing exactly what your network is trying
-      to reach. It is also significantly faster than most ISP DNS servers, which means every
-      lookup is quicker and browsing feels snappier across every device.
+      OpenDNS can provide more control than an ISP-provided resolver through its dashboard,
+      filtering rules, and optional reporting. DNS performance is not universal: latency
+      depends on location, routing, cache state, and the ISP, so OpenDNS may be faster or
+      slower on a particular network. Measure both resolvers before claiming a performance
+      improvement.
     </p>
   </section>
 
@@ -436,10 +436,12 @@ ipconfig /renew</pre>
 
     <h3>Stats and Logs</h3>
     <p>
-      By default, OpenDNS does not keep any records of your network's activity. Enabling
-      <strong>Stats and Logs</strong> in the network settings turns on a live view of every
-      DNS query being made, which domains are being blocked, and how much traffic each one
-      generates. It is the best way to understand what your network is actually doing.
+      OpenDNS dashboard statistics are not displayed until <strong>Stats and Logs</strong>
+      is enabled for the network. Enabling it makes DNS activity and filtering reports
+      available in the dashboard. That setting should not be described as proof that Cisco
+      keeps no operational records; review the
+      <a href="https://www.opendns.com/consumer-terms/">OpenDNS Home terms</a> and provide
+      notice to household users before enabling activity reporting.
     </p>
 
     <div class="tip">
@@ -599,11 +601,9 @@ ip a</pre>
 ssh yourusername@&lt;iMac-IP&gt;</pre>
 
     <p>
-      Once connected, switch to root so the remaining commands run with the necessary privileges.
+      Stay in the regular account and use <code>sudo</code> only for commands that require
+      administrative privileges. A persistent root shell is unnecessary for this setup.
     </p>
-
-    <pre><span class="comment">Elevate to root inside the SSH session</span>
-sudo su</pre>
 
     <h3>Install curl</h3>
     <p>Curl is needed to download and run the Pi-hole installer.</p>
@@ -675,6 +675,15 @@ rm -f basic-install.sh</pre>
         <tr><td>Enable query logging</td><td>No</td></tr>
       </tbody>
     </table>
+
+    <div class="note">
+      Selecting <strong>Enable query logging: No</strong> disables the
+      <code>pihole.log</code> query text log. It does not by itself disable the long-term
+      query database or guarantee that the dashboard stores no history. Configure
+      <code>database.maxDBdays</code> and Pi-hole's privacy level separately;
+      <code>maxDBdays = 0</code> disables long-term database retention. See the
+      <a href="https://docs.pi-hole.net/ftldns/configfile/">Pi-hole FTL configuration reference</a>.
+    </div>
 
     <h3>Set a custom admin password</h3>
     <p>
@@ -776,22 +785,23 @@ sudo pihole setpassword</pre>
     <p>
       Open any news site or content-heavy page that normally shows a lot of ads and do
       a hard refresh. A noticeable portion of the ad slots will be blank or missing.
-      The page will also load faster since those requests are blocked before they are even sent.
+      The page may also load faster when blocked requests remove unnecessary network activity.
     </p>
 
     <h3>Check the Pi-hole dashboard</h3>
     <p>
       Open <code>http://&lt;iMac-IP&gt;/admin</code> and log in. The dashboard shows the
       total number of DNS queries processed and the percentage that was blocked. The
-      Query Log shows every individual request in real time — blocked ones are clearly
-      marked. Once the router change takes effect you will see queries arriving from
-      multiple devices on the network, not just the one you tested on.
+      Query Log can show individual requests when the configured privacy and retention
+      settings permit it; blocked ones are clearly marked. Once the router change takes
+      effect you may see queries arriving from multiple devices on the network, not just
+      the one you tested on.
     </p>
 
     <div class="note">
-      On a typical home network, Pi-hole blocks roughly 25 to 30 percent of all DNS
-      queries. Those are ads and trackers that never reach any device, never consume
-      bandwidth, and never slow down a page load.
+      The blocked percentage varies widely with the clients, applications, browsing
+      patterns, and blocklists in use. Use the dashboard to establish a baseline for this
+      network instead of treating any fixed percentage as typical.
     </div>
   </section>
 

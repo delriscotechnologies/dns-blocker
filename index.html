@@ -29,28 +29,21 @@
       position: fixed;
       z-index: 10;
       top: 0;
-      left: 0;
-      width: 100%;
-      height: 6px;
-      appearance: none;
-      -webkit-appearance: none;
-      border: 0;
-      border-radius: 0;
-      background: rgba(76, 175, 138, 0.24);
-      color: #4caf8a;
-      box-shadow: 0 0 12px rgba(76, 175, 138, 0.45);
+      right: 0;
+      width: 3px;
+      height: 100vh;
+      background: rgba(91, 155, 213, 0.10);
+      box-shadow: 0 0 8px rgba(91, 155, 213, 0.22);
       pointer-events: none;
     }
-    .reading-progress::-webkit-progress-bar {
-      background: rgba(76, 175, 138, 0.24);
-    }
-    .reading-progress::-webkit-progress-value {
-      background: linear-gradient(to right, #4caf8a, #72ffbc);
-      box-shadow: 0 0 18px rgba(76, 175, 138, 0.95);
-    }
-    .reading-progress::-moz-progress-bar {
-      background: linear-gradient(to right, #4caf8a, #72ffbc);
-      box-shadow: 0 0 18px rgba(76, 175, 138, 0.95);
+    .reading-progress span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform: scaleY(0);
+      transform-origin: top;
+      background: linear-gradient(to bottom, var(--primary), var(--secondary) 70%, #72ffbc);
+      box-shadow: 0 0 16px rgba(76, 175, 138, 0.65);
     }
 
     body {
@@ -228,7 +221,7 @@
 </head>
 <body>
 
-  <progress class="reading-progress" data-reading-progress max="100" value="0" aria-label="Reading progress"></progress>
+  <div class="reading-progress" data-reading-progress aria-hidden="true"><span></span></div>
 
   <!-- ══════════════════════════
        HEADER
@@ -829,7 +822,7 @@ sudo pihole setpassword</pre>
     <p>&copy; 2026 Del Risco Technologies</p>
   </footer>
 
-  <script src="reading-progress.js?v=1" defer></script>
+  <script src="reading-progress.js?v=firewall-progress-1" defer></script>
 
 </body>
 </html>

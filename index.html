@@ -309,10 +309,11 @@
 
     <h3>How blocking works at the DNS level</h3>
     <p>
-      If you control the DNS server, you control what gets resolved and what does not.
-      When a blocked domain is requested, the DNS server returns nothing — the device
-      never gets an address, and the site never loads. The request dies right there,
-      before any content is ever fetched.
+      A filtering DNS server answers a blocked query according to its configured policy
+      instead of returning the domain's normal address. Depending on the product and mode,
+      the response may contain a null or sinkhole address, an <code>NXDOMAIN</code>,
+      <code>NODATA</code>, or <code>REFUSED</code> status, or a vendor block-page address.
+      In each case, the client does not receive the intended destination address.
     </p>
     <div class="flow">
       <div class="flow-step">Your device</div>
@@ -321,7 +322,7 @@
       <div class="flow-arrow">→</div>
       <div class="flow-step purple">OpenDNS / Pi-hole</div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step blocked">Domain blocked — no address returned</div>
+      <div class="flow-step blocked">Domain blocked — policy response returned</div>
     </div>
   </section>
 
@@ -727,15 +728,16 @@ sudo pihole setpassword</pre>
           <td><code>https://media.githubusercontent.com/media/zachlagden/Pi-hole-Optimized-Blocklists/main/lists/all_domains.txt</code></td>
         </tr>
         <tr>
-          <td>Hagezi DNS Blocklist — Ultimate</td>
-          <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@b14c7a539db4d6215021829fb2f626d728887db3/adblock/ultimate.txt</code></td>
+          <td>HaGeZi Multi PRO</td>
+          <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt</code></td>
         </tr>
       </tbody>
     </table>
 
     <div class="tip">
-      The Hagezi URL is pinned to a known release for reproducibility. Review the project's
-      release notes and update the version intentionally before running Update Gravity.
+      HaGeZi identifies Multi PRO as its recommended balanced list. Multi ULTIMATE is more
+      aggressive and can block legitimate app or website functionality. Review upstream
+      changes and keep an allowlist and rollback plan before running Update Gravity.
     </div>
   </section>
 

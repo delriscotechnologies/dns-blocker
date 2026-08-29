@@ -10,15 +10,11 @@
 
 ---
 
-DNS Blocker documents a two-layer filtering setup built around a repurposed 2010 iMac running Zorin OS. Pi-hole handles local domain blocking, while OpenDNS acts as the upstream resolver and applies category-based filtering and basic threat protection.
+DNS Blocker documents a two-layer DNS filtering setup using Pi-hole for local domain blocking and OpenDNS as the upstream resolver for category-based filtering.
 
-The router assigns the server a reserved local address and distributes Pi-hole as the network DNS service. Pi-hole evaluates each query against its configured lists and forwards permitted queries to OpenDNS. Phones, laptops, televisions, and other clients receive the same DNS policy without browser extensions or per-device filtering software.
+The setup applies one DNS policy across devices on the home network without requiring browser extensions or per-device filtering software.
 
-Blocked queries are answered according to the configured product and blocking mode. Pi-hole can return a null or sinkhole address, `NXDOMAIN`, `NODATA`, or `REFUSED`; a blocked query is not simply dropped. The write-up uses HaGeZi Multi PRO because the project recommends it as a balanced list. Multi ULTIMATE is more aggressive and can cause legitimate services to fail.
-
-This repository contains static technical documentation only. It does not include an installer, router configuration, Pi-hole database, query logs, credentials, blocklist copies, or a deployable server image.
-
-> DNS is a critical network service. A wrong router address, failed server, or overly aggressive blocklist can interrupt connectivity across every client. Keep a tested rollback path and make changes only on networks you own or administer.
+> DNS is a critical network service. A wrong router address, failed server, or overly aggressive blocklist can interrupt connectivity across the network.
 
 ## References
 

@@ -311,8 +311,9 @@
     <p>
       A filtering DNS server answers a blocked query according to its configured policy
       instead of returning the domain's normal address. Depending on the product and mode,
-      the response may contain a null or sinkhole address, an <code>NXDOMAIN</code>,
-      <code>NODATA</code>, or <code>REFUSED</code> status, or a vendor block-page address.
+      the response may contain a null or sinkhole address, an <code>NXDOMAIN</code> or
+      <code>NODATA</code> response, or a vendor-specific block-page address. Pi-hole's
+      documented blocking modes include NULL, IP-NODATA-AAAA, IP, NXDOMAIN, and NODATA.
       In each case, the client does not receive the intended destination address.
     </p>
     <div class="flow">
@@ -331,11 +332,11 @@
   <section class="section green-accent" id="s2">
     <h2>02. What is OpenDNS?</h2>
     <p>
-      OpenDNS is a free DNS service owned by Cisco that replaces your ISP's DNS server
-      with one you actually control. Once your router is pointed at OpenDNS, every device
-      on the network uses it automatically — no configuration needed on each device.
-      From the OpenDNS dashboard you can block entire categories of websites, specific
-      domains, and enable protection against malware and phishing, all in one place.
+      OpenDNS is a Cisco-operated DNS service that lets you apply filtering policies to
+      DNS requests from your network. Devices that accept DNS settings from the router can
+      use it without individual configuration, while devices using manual DNS settings,
+      VPN-provided DNS, or encrypted DNS such as DoH may bypass the router-provided resolver.
+      From the OpenDNS dashboard you can configure category and domain filtering policies.
     </p>
     <p>
       OpenDNS can provide more control than an ISP-provided resolver through its dashboard,
@@ -368,11 +369,10 @@
   <section class="section" id="s4">
     <h2>04. Configuring the Router</h2>
     <p>
-      The cleanest way to apply OpenDNS across the entire network is through the router.
-      When a device connects and asks for network settings, the router hands out everything
-      it needs — including which DNS server to use. By updating that value on the router,
-      every device on the network automatically starts using OpenDNS without any individual
-      configuration.
+      A common way to apply OpenDNS broadly is to advertise it through the router's DHCP
+      settings. Clients that accept those DNS settings will use OpenDNS without individual
+      configuration. Clients with manually configured DNS, VPN-provided DNS, or encrypted
+      DNS can use a different resolver.
     </p>
 
     <h3>OpenDNS server addresses</h3>
@@ -392,9 +392,9 @@
 
     <div class="warn-box">
       After saving the router settings, connected devices will not switch over immediately.
-      They already have an active lease and will keep using the old DNS until it expires,
-      usually within 24 hours. To apply the change right away on a Windows machine, run these
-      two commands in the Command Prompt:
+      They may keep using the previous DNS settings until their DHCP lease renews. The
+      lease duration depends on the DHCP server. To request updated settings immediately on
+      a Windows machine, run these two commands in Command Prompt:
     </div>
 
     <pre><span class="comment">Release the current network lease</span>
@@ -423,17 +423,11 @@ ipconfig /renew</pre>
       Useful categories include adult content, malware sites, phishing, and social media.
     </p>
 
-    <table>
-      <thead>
-        <tr><th>Level</th><th>What it blocks</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Low</td><td>Pornography only</td></tr>
-        <tr><td>Moderate</td><td>Pornography, adware, phishing, and tasteless content</td></tr>
-        <tr><td>High</td><td>Everything above plus social media, games, and video streaming</td></tr>
-        <tr><td>Custom</td><td>You choose exactly which categories to block</td></tr>
-      </tbody>
-    </table>
+    <div class="note">
+      OpenDNS offers preset filtering levels and custom category selection. Preset contents
+      can change over time, so review the categories shown in the current OpenDNS dashboard
+      instead of relying on a static list in this write-up.
+    </div>
 
     <h3>Stats and Logs</h3>
     <p>
@@ -471,12 +465,13 @@ ipconfig /renew</pre>
     </ol>
 
     <h3>Test from the terminal</h3>
-    <pre><span class="comment">Query a blocked domain through your DNS server</span>
-nslookup netflix.com
+    <pre><span class="comment">Query a domain you explicitly blocked in OpenDNS</span>
+nslookup &lt;blocked-domain&gt;</pre>
 
-<span class="comment">If OpenDNS is blocking it, the returned address will be the OpenDNS block page IP</span>
-Name:    netflix.com
-Address: 67.215.65.132</pre>
+    <p>
+      Verify the policy result in the browser or resolver output. Do not rely on one hard-coded
+      block-page IP address because resolver behavior and blocking responses can change.
+    </p>
 
     <div class="note">
       If the test page confirms your connection and blocked sites show the OpenDNS block
@@ -497,10 +492,10 @@ Address: 67.215.65.132</pre>
     <p>
       Part 2 adds Pi-hole — a network-wide DNS ad blocker installed directly on a dedicated
       machine. The server is a <strong>2010 iMac</strong> running <strong>Zorin OS</strong>,
-      managed remotely over SSH from a Windows PC. Pi-hole intercepts every DNS query on
-      the network and blocks ad and tracker domains before they are ever fetched. Anything
-      that passes through gets forwarded to OpenDNS, which applies the category filtering
-      from Part 1.
+      managed remotely over SSH from a Windows PC. Pi-hole receives DNS queries from clients
+      configured to use it and blocks matching ad and tracker domains before those destinations
+      are resolved normally. Permitted queries are forwarded to OpenDNS, which applies the
+      upstream filtering policy from Part 1.
     </p>
 
     <h3>Full query flow with both layers active</h3>
@@ -532,7 +527,7 @@ Address: 67.215.65.132</pre>
           <td>Pi-hole Server</td>
           <td>DNS ad blocker</td>
           <td>2010 iMac running Zorin OS</td>
-          <td><span class="warn-text">Static reservation on router — TBD</span></td>
+          <td>Reserved local address configured on router</td>
         </tr>
         <tr>
           <td>Management Client</td>
@@ -555,9 +550,10 @@ Address: 67.215.65.132</pre>
   <section class="section green-accent" id="s8">
     <h2>08. Initial Setup on Zorin OS</h2>
     <p>
-      Zorin OS is already installed on the 2010 iMac with its desktop environment. The first
-      step is making sure the system is fully up to date and that SSH is enabled so the machine
-      can be managed remotely from the Windows PC going forward.
+      Zorin OS is already installed on the 2010 iMac with its desktop environment. Zorin is
+      Ubuntu-based, but it is not one of the distributions Pi-hole explicitly lists as tested;
+      this write-up documents the configuration that worked in this lab. The first step is making
+      sure the system is fully up to date and that SSH is enabled for remote administration.
     </p>
 
     <h3>Update and upgrade all packages</h3>
@@ -607,7 +603,7 @@ ssh yourusername@&lt;iMac-IP&gt;</pre>
     </p>
 
     <h3>Install curl</h3>
-    <p>Curl is needed to download and run the Pi-hole installer.</p>
+    <p>This walkthrough uses curl to download the Pi-hole installer for review before execution.</p>
 
     <pre><span class="comment">Install curl</span>
 sudo apt install curl -y</pre>
@@ -623,10 +619,9 @@ sudo apt install curl -y</pre>
   <section class="section" id="s10">
     <h2>10. Setting a Static IP Reservation on the Router</h2>
     <p>
-      Before installing Pi-hole, the iMac needs a fixed IP address. The Pi-hole installer
-      actually pauses mid-installation to warn you about this — it states that the device
-      running Pi-hole must have either a static IP or a DHCP reservation, otherwise the IP
-      could change and break DNS for the whole network.
+      Before using the iMac as the network DNS server, give it a stable local address. A
+      static address or DHCP reservation prevents the resolver address from changing and
+      breaking DNS for clients that depend on it.
     </p>
     <p>
       The cleanest way to handle this is through a <strong>DHCP reservation on the router</strong>.
@@ -663,7 +658,7 @@ rm -f basic-install.sh</pre>
       running it, and obtain it only from Pi-hole's official HTTPS endpoint.
     </div>
 
-    <p>The installer walks through a short setup process. These are the selections made during installation:</p>
+    <p>The installer walks through a short setup process. The prompts can vary by Pi-hole version; these were the selections used for the reviewed lab installation:</p>
 
     <table>
       <thead>
@@ -717,16 +712,12 @@ sudo pihole setpassword</pre>
       <li>After adding both lists, go to <strong>Tools</strong> and click <strong>Update Gravity</strong> to pull in the new entries.</li>
     </ol>
 
-    <h3>Blocklists added</h3>
+    <h3>Blocklist used</h3>
     <table>
       <thead>
         <tr><th>List</th><th>Source</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Pi-hole Optimized Blocklists</td>
-          <td><code>https://media.githubusercontent.com/media/zachlagden/Pi-hole-Optimized-Blocklists/main/lists/all_domains.txt</code></td>
-        </tr>
         <tr>
           <td>HaGeZi Multi PRO</td>
           <td><code>https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt</code></td>
@@ -735,9 +726,9 @@ sudo pihole setpassword</pre>
     </table>
 
     <div class="tip">
-      HaGeZi identifies Multi PRO as its recommended balanced list. Multi ULTIMATE is more
-      aggressive and can block legitimate app or website functionality. Review upstream
-      changes and keep an allowlist and rollback plan before running Update Gravity.
+      HaGeZi identifies Multi PRO as a balanced recommendation. More aggressive lists can
+      increase false positives, so start with one curated list, keep an allowlist, and review
+      upstream changes before updating Gravity.
     </div>
   </section>
 
@@ -746,9 +737,9 @@ sudo pihole setpassword</pre>
   <section class="section" id="s13">
     <h2>13. Pointing the Router to Pi-hole</h2>
     <p>
-      Pi-hole is running and working, but at this point only devices that manually point to
-      it will benefit. To make it cover the entire network, the router needs to hand out the
-      Pi-hole IP as the DNS server for every device automatically.
+      Pi-hole is running and working, but at this point only clients configured to use it
+      will benefit. To make it the default resolver for the network, configure the router's
+      DHCP settings to advertise the Pi-hole address to clients.
     </p>
     <p>
       Log into the router admin panel and find the DNS settings under DHCP or WAN
@@ -763,14 +754,15 @@ sudo pihole setpassword</pre>
         <tr><th>DNS Slot</th><th>Address</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr><td>Primary DNS</td><td>iMac static IP (Pi-hole)</td><td>All client queries go through Pi-hole</td></tr>
+        <tr><td>Primary DNS</td><td>iMac static IP (Pi-hole)</td><td>Router-advertised DNS points clients to Pi-hole</td></tr>
         <tr><td>Secondary DNS</td><td>Blank, or a second Pi-hole</td><td>Avoids bypassing network-wide filtering</td></tr>
       </tbody>
     </table>
 
     <div class="note">
-      Once the router is saved, every device on the network that renews its DHCP lease
-      will automatically start using Pi-hole. No configuration needed on any individual device.
+      Once the router is saved, clients that accept the router's DHCP-provided DNS settings
+      will start using Pi-hole after they renew their lease. Devices using manual DNS, VPN DNS,
+      or encrypted DNS may continue to use a different resolver.
     </div>
   </section>
 
@@ -779,8 +771,8 @@ sudo pihole setpassword</pre>
   <section class="section green-accent" id="s14">
     <h2>14. Verification</h2>
     <p>
-      With Pi-hole running and the router updated, ads should be disappearing across
-      every device on the network.
+      With Pi-hole running and the router updated, ad and tracker requests should be reduced
+      on clients that are using Pi-hole as their resolver.
     </p>
 
     <h3>Visual test in the browser</h3>

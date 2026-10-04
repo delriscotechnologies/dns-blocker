@@ -1,7 +1,7 @@
 <h1 align="center">DNS-BLOCKER</h1>
 
 <p align="center">
-  Network-wide DNS filtering with Pi-hole and Cisco OpenDNS for ads, trackers, phishing, and unwanted content across a home network.
+  Network DNS filtering with Pi-hole and OpenDNS for devices configured to use Pi-hole as their DNS resolver.
 </p>
 
 <p align="center">
@@ -12,7 +12,7 @@
 
 DNS Blocker documents a two-layer DNS filtering setup using Pi-hole for local domain blocking and OpenDNS as the upstream resolver for category-based filtering.
 
-The setup applies one DNS policy across devices on the home network without requiring browser extensions or per-device filtering software.
+Devices using Pi-hole receive domain filtering without browser extensions or per-device filtering software. Alternative DNS resolvers, including those advertised over IPv6, can bypass it.
 
 > DNS is a critical network service. A wrong router address, failed server, or overly aggressive blocklist can interrupt connectivity across the network.
 

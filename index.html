@@ -742,11 +742,16 @@ sudo pihole setpassword</pre>
       DHCP settings to advertise the Pi-hole address to clients.
     </p>
     <p>
-      Log into the router admin panel and find the DNS settings under DHCP or WAN
-      configuration. Set the <strong>primary DNS</strong> to the iMac's static IP address.
+      Configure the router's LAN/DHCP settings to advertise Pi-hole as the DNS server.
+      WAN DNS settings configure the router's upstream resolver and may not change the DNS
+      servers advertised to clients. Set the <strong>primary DNS</strong> to the iMac's static IP address.
       Leave the secondary slot blank unless you run a second Pi-hole. Configure OpenDNS as
       an upstream resolver inside Pi-hole instead of advertising it directly to clients;
       otherwise, some devices may bypass Pi-hole filtering.
+    </p>
+    <p>
+      If IPv6 is enabled, also check the DNS servers advertised through router advertisements
+      or DHCPv6. An alternative resolver can bypass Pi-hole.
     </p>
 
     <table>

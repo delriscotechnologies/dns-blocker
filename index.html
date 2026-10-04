@@ -240,7 +240,7 @@
       never asked for. This project intercepts those requests at the network level and
       blocks them before they ever reach your devices, using <strong>OpenDNS</strong> for
       category filtering and <strong>Pi-hole</strong> for ad blocking.
-      No browser extensions. No per-device setup. One solution that covers everything,
+      No browser extensions. No per-device setup. Filtering for devices using the configured DNS resolver,
       running on a repurposed <strong>2010 iMac</strong> as a dedicated server.
     </p>
   </header>
@@ -460,13 +460,13 @@ ipconfig /renew</pre>
     <h3>Test a blocked site from the browser</h3>
     <ol>
       <li>Wait about 3 minutes after saving your filtering settings for them to propagate.</li>
-      <li>Open a <strong>private or incognito window</strong> to avoid cached results.</li>
-      <li>Try to visit a domain you have set to block. Instead of the site loading, you will see the OpenDNS block page.</li>
+      <li>Private browsing avoids some browser cache; it does not clear the system DNS cache. Use the resolver test below.</li>
+      <li>Try to visit a domain you have set to block. Confirm that the requested content is blocked; a block page or connection error can depend on the protocol.</li>
     </ol>
 
     <h3>Test from the terminal</h3>
     <pre><span class="comment">Query a domain you explicitly blocked in OpenDNS</span>
-nslookup &lt;blocked-domain&gt;</pre>
+nslookup &lt;blocked-domain&gt; &lt;configured-dns-server-ip&gt;</pre>
 
     <p>
       Verify the policy result in the browser or resolver output. Do not rely on one hard-coded
@@ -701,7 +701,7 @@ sudo pihole setpassword</pre>
     <h2>12. Adding Community Blocklists</h2>
     <p>
       The default Pi-hole blocklist is a solid starting point, but adding community-maintained
-      lists significantly expands coverage. Two additional lists were added to this setup, both
+      lists significantly expands coverage. One additional list was added to this setup,
       known for being comprehensive and well-maintained.
     </p>
 
@@ -709,7 +709,7 @@ sudo pihole setpassword</pre>
     <ol>
       <li>Open the Pi-hole web panel and go to <strong>Adlists</strong> under the Group Management section.</li>
       <li>Paste the URL of the blocklist into the address field and click <strong>Add</strong>.</li>
-      <li>After adding both lists, go to <strong>Tools</strong> and click <strong>Update Gravity</strong> to pull in the new entries.</li>
+      <li>After adding the list, go to <strong>Tools</strong> and click <strong>Update Gravity</strong> to pull in the new entries.</li>
     </ol>
 
     <h3>Blocklist used</h3>
@@ -830,3 +830,4 @@ sudo pihole setpassword</pre>
 
 </body>
 </html>
+
